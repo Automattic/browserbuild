@@ -108,8 +108,8 @@ function createDist () {
 
 function output () {
   // close closure and export global
-  data += '})();';
   data += program.global + ' = require(\'' + require('path').basename(mod) + '\');\n';
+  data += '})();';
 
   var path = distPath + '/' + program.filename;
   fs.writeFileSync(path, data, 'utf8');
