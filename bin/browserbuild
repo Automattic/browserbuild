@@ -1,0 +1,117 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+  , path = require('path')
+  , fs = require('fs')
+  , pwd = process.cwd()
+  , dir = path.basename(pwd)
+  , file = dir + '.js'
+  , distPath = pwd + '/dist'
+
+// source for client-side require
+
+var source = fs.readFileSync(__dirname + '/../lib/require.js', 'utf8')
+    .replace(/\/*([^/]+)\/\n/g, '')
+    .replace(/\n/g, '')
+    .replace(/ +/g, ' ')
+
+// program
+
+program
+  .version('0.1.0')
+  .option('-g, --global <name>', 'Name of the global to export ['+dir+']', dir)
+  .option('-f, --filename <name>', 'Name of the file to create ['+file+']', file)
+  .option('-m, --main <name>', 'Name of the main module to export (auto)')
+  .option('-s, --skip-parse', 'Avoid parsing meta-blocks')
+  .parse(process.argv)
+
+// add examples to help
+
+program.on('--help', function () {
+  console.error('\n  Examples:\n\n    $ browserbuild dir/ \n    '
+    + '$ browserbuild -g test file.js \n');
+});
+
+// check for at least one argument
+
+if (!program.args[0]) {
+  program.emit('help');
+  process.exit(1);
+}
+
+// test validity of global variable to export
+
+if (/[^_\d\w]/.test(program.global)) {
+  console.error('\n  Global to export ("' + program.global + '") is not valid javascript.');
+  console.error('  Please change it with the "-g" or "--global" options.\n');
+  process.exit(1);
+}
+
+// process argument
+
+var target = program.args[0]
+  , path = target[0] == '/' ? target : (pwd + '/' + target)
+  , basePath = require('path').dirname(path)
+  , data = '(function () { ' + source
+  , mod = program.main || target.replace(/\.js$/, '')
+
+if (fs.statSync(path).isDirectory()) {
+  if (!program.main) {
+    console.error('\n  Please supply the main module to export from the directory '
+      + 'with the "-m" or "--main" options.\n');
+    process.exit(1);
+  }
+  basePath = path;
+}
+
+function handle (path) {
+  var stat = fs.statSync(path);
+
+  if (stat.isDirectory()) {
+    var files = fs.readdirSync(path);
+
+    files.forEach(function (f) {
+      handle(path + '/' + f);
+    });
+  } else {
+    data += read(path);
+  }
+};
+
+handle(path);
+createDist();
+output();
+
+// processes a file
+
+function read (path) {
+  return 'require.register("' + path.replace(basePath + '/', '') + '", '
+  + 'function(module, exports, require){\n' + fs.readFileSync(path, 'utf8') + '\n});';
+};
+
+// create dist directory if it doesn't exist
+
+function createDist () {
+  try {
+    fs.statSync(distPath);
+  } catch (e) {
+    if ('ENOENT' == e.code) {
+      fs.mkdirSync(distPath, '0755');
+      console.error('  + created /dist');
+    } else {
+      throw e;
+    }
+  }
+};
+
+// generates output file
+
+function output () {
+  // close closure and export global
+  data += '})();';
+  data += program.global + ' = require(\'' + require('path').basename(mod) + '\');\n';
+
+  var path = distPath + '/' + program.filename;
+  fs.writeFileSync(path, data, 'utf8');
+  console.error('\n  \033[92m✔ written "' + path.replace(pwd + '/', '') + '"\033[39m\n');
+};

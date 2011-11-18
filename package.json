@@ -1,0 +1,8 @@
+{
+    "name": "browserbuild"
+  , "version": "0.1.0"
+  , "bin": { "jade": "./bin/browserbuild" }
+  , "dependencies": {
+      "commander": "0.4.0"
+    }
+}
