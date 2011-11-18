@@ -10,7 +10,6 @@ It takes 3 easy steps
 
 ### Step 1: write for Node
 
-**world.js**
 ```js
 /**
  * Module dependencies.
@@ -28,7 +27,7 @@ exports.hello = function () { };
 ### Step 2: build for browser
 
 ```bash
-$ browserbuild world .
+$ browserbuild world.js
 # outputs dist/world.js
 ```
 
