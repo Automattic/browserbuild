@@ -64,7 +64,8 @@ On the client side:
 
 ## Credits
 
-- `require` functions by TJ Holowaychuk &lt;tj@learnboost.com&gt;
+- `require` functions by [Jonah Fox](https://github.com/weepy), with
+  modifications by TJ Holowaychuk &lt;tj@learnboost.com&gt;
 - inspired by `browserify`
 
 ## License 
