@@ -84,9 +84,36 @@ output();
 
 // processes a file
 
-function read (path) {
-  return 'require.register("' + path.replace(basePath + '/', '') + '", '
-  + 'function(module, exports, require){\n' + fs.readFileSync(path, 'utf8') + '\n});';
+function read (pathname) {
+  var data = fs.readFileSync(pathname, 'utf8')
+    , path = require('path')
+
+  // remove `// if node`
+  var ignoring = false
+
+  data = data.split('\n').map(function (line, i) {
+    if (ignoring) {
+      if (/^ *\/\/ *end/.test(line)) {
+        ignoring = false;
+      }
+      return ''
+    } else {
+      if (/^ *\/\/ *if *node/.test(line)) {
+        console.log(
+            '\033[90m  - [%s] skipping node-only code at line %d \033[39m'
+          , path.basename(pathname)
+          , i + 1
+        );
+        ignoring = true;
+        return '';
+      } else {
+        return line;
+      }
+    }
+  }).join('\n')
+
+  return 'require.register("' + pathname.replace(basePath + '/', '') + '", '
+  + 'function(module, exports, require){\n' + data + '\n});';
 };
 
 // create dist directory if it doesn't exist
