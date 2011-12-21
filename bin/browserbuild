@@ -23,6 +23,7 @@ program
   .option('-f, --filename <name>', 'Name of the file to create ['+file+']', file)
   .option('-m, --main <name>', 'Name of the main module to export (auto)')
   .option('-s, --skip-parse', 'Avoid parsing meta-blocks')
+  .option('-i, --instrument', 'Replace debug and profile comments with `console` calls')
   .parse(process.argv)
 
 // add examples to help
@@ -110,11 +111,42 @@ function read (pathname) {
         return line;
       }
     }
-  }).join('\n')
+  }).join('\n');
+
+  // optionally instrument
+  if (program.instrument) data = instrument(data);
 
   return 'require.register("' + pathname.replace(basePath + '/', '') + '", '
   + 'function(module, exports, require){\n' + data + '\n});';
 };
+
+// adds instrumentation
+
+function instrument (js) {
+  // Profiling support
+  js = js.replace(/^ *\/\/ *(\$?)(start|end): *([^\n]+)/gm, function(_, isExpr, type, expr){
+    if (!isExpr) expr = '"' + expr + '"';
+    switch (type) {
+      case 'start':
+        return 'window.console && console.time && console.time(' + expr + ');';
+      case 'end':
+        return 'window.console && console.timeEnd && console.timeEnd(' + expr + ');';
+    }
+  });
+
+  // Debugging
+  js = js.replace(/^ *\/\/ *debug: *([^\n,]+) *([^\n]+)?/gm, function(_, fmt, args){
+    return 'window.console && console.warn && '
+      + 'console.warn("debug  : ' + fmt + '"' + (args || '') + ');';
+  });
+
+  js = js.replace(/^ *\/\/ *assert: ([^,]+) *, *([^\n]+)/gm, function(_, expr, msg){
+    return 'if (window.console && !(' + expr + ')) { '
+      + 'console.error("assert : %s. (%s)", ' + msg + ', "' + expr + '"); }';
+  });
+
+  return js;
+}
 
 // create dist directory if it doesn't exist
 
