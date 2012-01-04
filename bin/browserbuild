@@ -137,7 +137,7 @@ function instrument (js) {
   // Debugging
   js = js.replace(/^ *\/\/ *debug: *([^\n,]+) *([^\n]+)?/gm, function(_, fmt, args){
     return 'window.console && console.warn && '
-      + 'console.warn("debug  : ' + fmt + '"' + (args || '') + ');';
+      + 'console.warn(\'debug  : ' + fmt + '\'' + (args || '') + ');';
   });
 
   js = js.replace(/^ *\/\/ *assert: ([^,]+) *, *([^\n]+)/gm, function(_, expr, msg){
