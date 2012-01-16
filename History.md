@@ -1,4 +1,14 @@
 
+0.2.1 / 2012-01-16
+==================
+
+  * Fixed double quotes in debug statements.
+
+0.2.0 / 2011-12-21
+==================
+
+  * Added debugging instrumentatiion functionality (`-i`).
+
 0.1.1 / 2011-12-15
 ==================
 
