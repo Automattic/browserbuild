@@ -53,7 +53,7 @@ if (/[^_\d\w]/.test(program.global)) {
 var target = program.args[0]
   , path = target[0] == '/' ? target : (pwd + '/' + target)
   , basePath = require('path').dirname(path)
-  , data = '(function () { ' + source
+  , data = '(function () { var global = this; ' + source
   , mod = program.main || target.replace(/\.js$/, '')
 
 if (fs.statSync(path).isDirectory()) {
@@ -117,7 +117,7 @@ function read (pathname) {
   if (program.instrument) data = instrument(data);
 
   return 'require.register("' + pathname.replace(basePath + '/', '') + '", '
-  + 'function(module, exports, require){\n' + data + '\n});';
+  + 'function(module, exports, require, global){\n' + data + '\n});';
 };
 
 // adds instrumentation
