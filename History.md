@@ -1,4 +1,10 @@
 
+0.3.0 / 2012-01-18
+==================
+
+  * Added support for `global` pointing to the global object, generally
+    `window`.
+
 0.2.1 / 2012-01-16
 ==================
 
