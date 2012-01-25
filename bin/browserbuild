@@ -72,7 +72,9 @@ function handle (path) {
     var files = fs.readdirSync(path);
 
     files.forEach(function (f) {
-      handle(path + '/' + f);
+      if(f.match(/\.js$/i)) {
+          handle(path + '/' + f);
+      }
     });
   } else {
     data += read(path);
