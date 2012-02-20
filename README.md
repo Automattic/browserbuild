@@ -15,7 +15,11 @@ It takes 3 easy steps
  * Module dependencies.
  */
 
-var a = require('./b')
+// local submodules
+var a = require('./b');
+
+// other modules found by require
+var other = require('other_module');
 
 /**
  * Module exports.
@@ -61,12 +65,15 @@ On the client side:
 - No code bloat.
   - The conversion for the browser only adds a few lines of code.
   - No trouble debugging.
+- Automatic module inclusion
+  - Identifies all `require` statements, adding only modules if necessary.
 
 ## Credits
 
 - `require` functions by [Jonah Fox](https://github.com/weepy), with
   modifications by TJ Holowaychuk &lt;tj@learnboost.com&gt;
 - inspired by `browserify`
+- `require` submodule parsing by [Andor Goetzendorff](https://github.com/ruxkor)
 
 ## License 
 
