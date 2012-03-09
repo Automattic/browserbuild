@@ -18,7 +18,7 @@ var source = fs.readFileSync(__dirname + '/../lib/require.js', 'utf8')
 // program
 
 program
-  .version('0.3.0')
+  .version('0.3.1')
   .option('-g, --global <name>', 'Name of the global to export ['+dir+']', dir)
   .option('-f, --filename <name>', 'Name of the file to create ['+file+']', file)
   .option('-m, --main <name>', 'Name of the main module to export (auto)')
