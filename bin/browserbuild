@@ -57,17 +57,41 @@ if (fs.statSync(path).isDirectory()) {
   basePath = path;
 }
 
-function handle (path) {
-  var stat = fs.statSync(path);
+var includedModules = {
+    names: []
+  , paths: []
+};
+
+function handle (path,modulename) {
+  if (modulename === undefined) modulename = '';
+  var stat = fs.lstatSync(path);
+
+  if (stat.isSymbolicLink()) {
+    path = fs.readlinkSync(path);
+    stat = fs.lstatSync(path);
+  };
 
   if (stat.isDirectory()) {
     var files = fs.readdirSync(path);
-
     files.forEach(function (f) {
-      handle(path + '/' + f);
+      handle(path + '/' + f, modulename);
     });
-  } else {
-    data += read(path);
+  } else if (path.match(/\.js/i)) {
+    var contentInfo = read(path,modulename);
+
+    // add data from file
+    data += contentInfo.content;
+
+    contentInfo.requires.forEach(function(r) {
+      if (
+          (! ~includedModules.paths.indexOf(r.path))
+       && (! ~includedModules.names.indexOf(r.path))
+      ) {
+        includedModules.names.push(r.name);
+        includedModules.paths.push(r.path);
+        handle(r.path,r.name);
+      }
+    });
   }
 };
 
@@ -77,9 +101,11 @@ output();
 
 // processes a file
 
-function read (pathname) {
-  var data = fs.readFileSync(pathname, 'utf8')
-    , path = require('path')
+function read (pathname,modulename) {
+  var data = fs.readFileSync(pathname, 'utf8');
+  var path = require('path');
+
+  if (modulename === undefined) modulename = '';
 
   // remove `// if node`
   var ignoring = false
@@ -105,11 +131,82 @@ function read (pathname) {
     }
   }).join('\n');
 
+  var reqGeneralRegexp = /require[\s]*\([\s]*([^\)]*)[\s]*\)/;
+  var reqAsStringRegexp = /require[\s]*\([/s]*(['"])([^\1]*)\1\)[\s]*/;
+
+  // get all lines containing requirement statements
+  var reqInData = data
+    .split(';')
+    .join('\n')
+    .split('\n')
+    .map(function(stmt) { return [stmt,stmt.match(reqGeneralRegexp)]; })
+    .filter(function(r) { return r[1]; })
+  ;
+
+  // return all require stmts matching a string
+  var requirements = reqInData.map(function(stmtWithReq) {
+      var stmt = stmtWithReq[0];
+      var generalRegexp = stmtWithReq[1];
+      var reqString = stmt.match(reqAsStringRegexp);
+      if (!reqString) {
+        console.log(
+            '\033[31m  - [%s] required module is not a string: %s \033[39m'
+          , path.basename(pathname)
+          , generalRegexp[1]
+        );
+      }
+      return reqString;
+  }).filter(function(r) { return r; });
+
+  // check whether module is loaded by node path or relative
+  var requirements = requirements.map(function(reqString) {
+    var req = {
+        name: null
+      , path: null
+      , original: null
+    };
+    if (reqString[2].match(/^\./)) {
+      // path is relative
+      req.original = reqString[0];
+      req.path = require.resolve(path.dirname(pathname)+'/'+reqString[2]);
+
+      var moduleprefix = modulename;
+      // if the modulename is not a top-level name and is not index.js, remove it from the prefix
+      if (moduleprefix.match(/\//) && path.basename(pathname).toLowerCase() != 'index.js') {
+        moduleprefix = moduleprefix.replace(/^(.*)\/.*$/,'$1');
+      }
+      req.name = cleanupParts(
+        moduleprefix
+         ? moduleprefix+'/'+reqString[2]
+         : reqString[2]
+      );
+    }
+    else {
+      req.name = reqString[2];
+      req.path = require.resolve(reqString[2]);
+    }
+    return req;
+  });
+ 
+  // replace original string with generated path, if needed
+  requirements.filter(function(r) { return r.original !== null; }).forEach(function(r) {
+    data = data.replace(r.original,"require('"+r.name+"')");
+  });
+
   // optionally instrument
   if (program.instrument) data = instrument(data);
 
-  return 'require.register("' + pathname.replace(basePath + '/', '') + '", '
-  + 'function(module, exports, require, global){\n' + data + '\n});';
+  var dataInRegister = 'require.register("'
+    + (modulename ? modulename : pathname.replace(basePath + '/', ''))
+    + '", '
+    + 'function(module, exports, require, global){\n'
+    + data + '\n});'
+  ;
+
+  return {
+      content: dataInRegister
+    , requires: requirements
+  };
 };
 
 // adds instrumentation
@@ -167,3 +264,23 @@ function output () {
   fs.writeFileSync(path, data, 'utf8');
   console.error('\n  \033[92m✔ written "' + path.replace(pwd + '/', '') + '"\033[39m\n');
 };
+
+// cleans up a path: '../one/two/.././three' --> '../one/three'
+
+function cleanupParts (path) {
+  var _cleanupParts = function (inp,out,skip) {
+    if (!inp.length) {
+        for (;skip>0;skip--) out.push('..');
+        return out;
+    }
+    var cur = inp.slice(0,1);
+    if (cur == '.') {}
+    else if (cur == '..') skip += 1;
+    else if (skip > 0) skip -= 1;
+    else out.push(cur);
+    return _cleanupParts(inp.slice(1),out,skip);
+  }
+  inp = path.split('/').reverse();
+  var ret = _cleanupParts(inp,[],0).reverse().join('/');
+  return ret;
+}
