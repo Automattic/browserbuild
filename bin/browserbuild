@@ -40,14 +40,6 @@ if (!program.args[0]) {
   process.exit(1);
 }
 
-// test validity of global variable to export
-
-if (/[^_\d\w]/.test(program.global)) {
-  console.error('\n  Global to export ("' + program.global + '") is not valid javascript.');
-  console.error('  Please change it with the "-g" or "--global" options.\n');
-  process.exit(1);
-}
-
 // process argument
 
 var target = program.args[0]
