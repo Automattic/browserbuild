@@ -24,6 +24,7 @@ program
   .option('-m, --main <name>', 'Name of the main module to export (auto)')
   .option('-s, --skip-parse', 'Avoid parsing meta-blocks')
   .option('-i, --instrument', 'Replace debug and profile comments with `console` calls')
+  .option('-p, --print', 'Print build to stdout')
   .parse(process.argv)
 
 // add examples to help
@@ -72,7 +73,6 @@ function handle (path) {
 };
 
 handle(path);
-createDist();
 output();
 
 // processes a file
@@ -163,7 +163,13 @@ function output () {
   data += program.global + ' = require(\'' + require('path').basename(mod) + '\');\n';
   data += '})();';
 
-  var path = distPath + '/' + program.filename;
-  fs.writeFileSync(path, data, 'utf8');
-  console.error('\n  \033[92m✔ written "' + path.replace(pwd + '/', '') + '"\033[39m\n');
+  if (program.print) {
+    console.log(data)
+  }
+  else {
+    createDist();
+    var path = distPath + '/' + program.filename;
+    fs.writeFileSync(path, data, 'utf8');
+    console.error('\n  \033[92m✔ written "' + path.replace(pwd + '/', '') + '"\033[39m\n');
+  }
 };
