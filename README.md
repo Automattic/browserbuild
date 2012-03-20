@@ -37,12 +37,12 @@ compiled library.
 
 3. Use!
 
-```html
-<script src="my-library.js"></script>
-<script>
-  hithere();
-</script>
-```
+    ```html
+    <script src="my-library.js"></script>
+    <script>
+      hithere();
+    </script>
+    ```
 
 ## Features
 
