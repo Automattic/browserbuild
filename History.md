@@ -1,4 +1,9 @@
 
+0.4.1 / 2012-03-20
+==================
+
+  * Avoid whitespace strip for visionmedia/debug
+
 0.4.0 / 2012-03-20
 ==================
 
