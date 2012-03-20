@@ -1,50 +1,46 @@
 
 # Browserbuild
 
-## The simple solution to Node.JS/browser interoperatibility
+Browserbuild allows you to write code for the browser that leverages
+`require`, `module` and `exports`, but that gets exposed as a global.
 
-Browserbuild solves the same problem everyone wants to solve: how do I make a
-module interoperable between the server and client?
+It doesn't enforce any script loaders on the user to leverage the 
+compiled library.
 
-It takes 3 easy steps
+## Example
 
-### Step 1: write for Node
+1. Write for Node
+
+**lib/hithere.js**
 
 ```js
-/**
- * Module dependencies.
- */
+var b = require('./b')
 
-var a = require('./b')
-
-/**
- * Module exports.
- */
-
-exports.hello = function () { };
+module.exports = function () {
+  alert('hello ' + b());
+}
 ```
 
-### Step 2: build for browser
+**lib/b.js**
+
+```
+module.exports = function () {
+  return 'world';
+}
+```
+
+2. Build for browser!
 
 ```bash
-$ browserbuild world.js
-# outputs dist/world.js
+$ browserbuild -m hithere `find lib -name '*.js'` > my-library.js
 ```
 
-### Step 3: use
-
-On the server-side:
-
-```js
-require('./world').hello();
-```
-
-On the client side:
+3. Use!
 
 ```html
-<script src="/js/world.js"></script>
+<script src="my-library.js"></script>
 <script>
-  world.hello();
+  hithere();
 </script>
 ```
 
