@@ -72,7 +72,7 @@ function handle (path) {
 if (program.debug) {
   debug = read(__dirname + '/../node_modules/debug/debug.js');
 } else {
-  debug = 'function debug(){};';
+  debug = 'function debug(){return debug};';
 }
 
 // head
