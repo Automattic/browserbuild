@@ -4,9 +4,6 @@ var program = require('commander')
   , path = require('path')
   , fs = require('fs')
   , pwd = process.cwd()
-  , dir = path.basename(pwd)
-  , file = dir + '.js'
-  , distPath = pwd + '/dist'
 
 // source for client-side require
 
@@ -18,44 +15,32 @@ var source = fs.readFileSync(__dirname + '/../lib/require.js', 'utf8')
 // program
 
 program
-  .version('0.3.1')
-  .option('-g, --global <name>', 'Name of the global to export ['+dir+']', dir)
-  .option('-f, --filename <name>', 'Name of the file to create ['+file+']', file)
-  .option('-m, --main <name>', 'Name of the main module to export (auto)')
-  .option('-s, --skip-parse', 'Avoid parsing meta-blocks')
-  .option('-i, --instrument', 'Replace debug and profile comments with `console` calls')
+  .version(require('../package').version)
+  .usage('[options] <file …>')
+  .option('-g, --global [name]', 'Name of the global to export.')
+  .option('-b, --basepath [name]', 'Base path of supplied files ['+ pwd + '].', pwd)
+  .option('-m, --main <name>', 'Name of the main file/module to export.')
+  .option('-d, --debug', 'Includes visionmedia/debug for a dev build.')
   .parse(process.argv)
 
-// add examples to help
+// validate
 
-program.on('--help', function () {
-  console.error('\n  Examples:\n\n    $ browserbuild dir/ \n    '
-    + '$ browserbuild -g test file.js \n');
-});
-
-// check for at least one argument
-
-if (!program.args[0]) {
+if (!program.main) {
+  console.error('\n  Please supply `main` option\n');
   program.emit('help');
-  process.exit(1);
+  return;
+}
+
+if (!process.args.length) {
+  console.error('\n  Please supply files.\n');
+  program.emit('help');
+  return;
 }
 
 // process argument
 
-var target = program.args[0]
-  , path = target[0] == '/' ? target : (pwd + '/' + target)
-  , basePath = require('path').dirname(path)
-  , data = '(function () { var global = this; ' + source
-  , mod = program.main || target.replace(/\.js$/, '')
-
-if (fs.statSync(path).isDirectory()) {
-  if (!program.main) {
-    console.error('\n  Please supply the main module to export from the directory '
-      + 'with the "-m" or "--main" options.\n');
-    process.exit(1);
-  }
-  basePath = path;
-}
+var target = program.args
+  , mod = path.basename(program.main)
 
 function handle (path) {
   var stat = fs.statSync(path);
@@ -67,103 +52,29 @@ function handle (path) {
       handle(path + '/' + f);
     });
   } else {
-    data += read(path);
+    var base = program.basepath
+      , source = fs.readFileSync(path, 'utf8')
+
+    if (base && base == path.substr(0, base.length)) {
+      path = path.substr(base.length);
+    }
+
+    data += 'require.register("' + path + '", '
+      + 'function(module, exports, require, global){\n' + source + '\n});';
   }
 };
 
-handle(path);
-createDist();
-output();
+// head
+var data = '(function(){'
+  + 'var global = this;'
+  + 'var debug = ' + debug + ';'
+  + source
 
-// processes a file
+// handle files
+process.args.forEach(handle);
 
-function read (pathname) {
-  var data = fs.readFileSync(pathname, 'utf8')
-    , path = require('path')
+// tail
+data += program.global + ' = require(\'' + mod + '\');\n';
+data += '})();';
 
-  // remove `// if node`
-  var ignoring = false
-
-  data = data.split('\n').map(function (line, i) {
-    if (ignoring) {
-      if (/^ *\/\/ *end/.test(line)) {
-        ignoring = false;
-      }
-      return ''
-    } else {
-      if (/^ *\/\/ *if *node/.test(line)) {
-        console.log(
-            '\033[90m  - [%s] skipping node-only code at line %d \033[39m'
-          , path.basename(pathname)
-          , i + 1
-        );
-        ignoring = true;
-        return '';
-      } else {
-        return line;
-      }
-    }
-  }).join('\n');
-
-  // optionally instrument
-  if (program.instrument) data = instrument(data);
-
-  return 'require.register("' + pathname.replace(basePath + '/', '') + '", '
-  + 'function(module, exports, require, global){\n' + data + '\n});';
-};
-
-// adds instrumentation
-
-function instrument (js) {
-  // Profiling support
-  js = js.replace(/^ *\/\/ *(\$?)(start|end): *([^\n]+)/gm, function(_, isExpr, type, expr){
-    if (!isExpr) expr = '"' + expr + '"';
-    switch (type) {
-      case 'start':
-        return 'window.console && console.time && console.time(' + expr + ');';
-      case 'end':
-        return 'window.console && console.timeEnd && console.timeEnd(' + expr + ');';
-    }
-  });
-
-  // Debugging
-  js = js.replace(/^ *\/\/ *debug: *([^\n,]+) *([^\n]+)?/gm, function(_, fmt, args){
-    fmt = fmt.replace(/"/g, '\\"');
-    return 'window.console && console.warn && '
-      + 'console.warn("debug  : ' + fmt + '"' + (args || '') + ');';
-  });
-
-  js = js.replace(/^ *\/\/ *assert: ([^,]+) *, *([^\n]+)/gm, function(_, expr, msg){
-    return 'if (window.console && !(' + expr + ')) { '
-      + 'console.error("assert : %s. (%s)", ' + msg + ', "' + expr + '"); }';
-  });
-
-  return js;
-}
-
-// create dist directory if it doesn't exist
-
-function createDist () {
-  try {
-    fs.statSync(distPath);
-  } catch (e) {
-    if ('ENOENT' == e.code) {
-      fs.mkdirSync(distPath, '0755');
-      console.error('  + created /dist');
-    } else {
-      throw e;
-    }
-  }
-};
-
-// generates output file
-
-function output () {
-  // close closure and export global
-  data += program.global + ' = require(\'' + require('path').basename(mod) + '\');\n';
-  data += '})();';
-
-  var path = distPath + '/' + program.filename;
-  fs.writeFileSync(path, data, 'utf8');
-  console.error('\n  \033[92m✔ written "' + path.replace(pwd + '/', '') + '"\033[39m\n');
-};
+console.log(data);
