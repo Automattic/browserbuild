@@ -57,6 +57,8 @@ compiled library.
 - No code bloat.
   - The conversion for the browser only adds a few lines of code.
   - No trouble debugging.
+- [debug](http://github.com/visionmedia/debug) integration
+  - Make dev builds with debugging enabled.
 
 ## Credits
 
