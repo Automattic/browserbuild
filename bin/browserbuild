@@ -9,14 +9,14 @@ var program = require('commander')
 
 function read (file) {
   return fs.readFileSync(file, 'utf8')
-    .replace(/\/*([^/]+)\/\n/g, '')
-    .replace(/\n/g, '')
-    .replace(/ +/g, ' ')
 }
 
 // source for client-side require
 
 var source = read(__dirname + '/../lib/require.js')
+  .replace(/\/*([^/]+)\/\n/g, '')
+  .replace(/\n/g, '')
+  .replace(/ +/g, ' ')
 
 // program
 
