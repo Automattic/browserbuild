@@ -5,12 +5,18 @@ var program = require('commander')
   , fs = require('fs')
   , pwd = process.cwd()
 
-// source for client-side require
+// reads a client-side file
 
-var source = fs.readFileSync(__dirname + '/../lib/require.js', 'utf8')
+function read (file) {
+  return fs.readFileSync(file, 'utf8')
     .replace(/\/*([^/]+)\/\n/g, '')
     .replace(/\n/g, '')
     .replace(/ +/g, ' ')
+}
+
+// source for client-side require
+
+var source = read(__dirname + '/../lib/require.js')
 
 // program
 
@@ -26,14 +32,12 @@ program
 // validate
 
 if (!program.main) {
-  console.error('\n  Please supply `main` option\n');
-  program.emit('help');
+  console.error('\n  Please supply a `main` option\n');
   return;
 }
 
-if (!process.args.length) {
+if (!program.args.length) {
   console.error('\n  Please supply files.\n');
-  program.emit('help');
   return;
 }
 
@@ -64,17 +68,24 @@ function handle (path) {
   }
 };
 
+// debug
+if (program.debug) {
+  debug = read(__dirname + '/../node_modules/debug/debug.js');
+} else {
+  debug = 'function debug(){};';
+}
+
 // head
 var data = '(function(){'
   + 'var global = this;'
-  + 'var debug = ' + debug + ';'
+  + debug
   + source
 
 // handle files
-process.args.forEach(handle);
+program.args.forEach(handle);
 
 // tail
-data += program.global + ' = require(\'' + mod + '\');\n';
+data += (program.global || program.main) + ' = require(\'' + mod + '\');\n';
 data += '})();';
 
 console.log(data);
