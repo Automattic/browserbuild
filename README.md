@@ -11,29 +11,29 @@ compiled library.
 
 1. Write for Node
 
-**lib/hithere.js**
+    **lib/hithere.js**
 
-```js
-var b = require('./b')
+    ```js
+    var b = require('./b')
 
-module.exports = function () {
-  alert('hello ' + b());
-}
-```
+    module.exports = function () {
+      alert('hello ' + b());
+    }
+    ```
 
-**lib/b.js**
+    **lib/b.js**
 
-```
-module.exports = function () {
-  return 'world';
-}
-```
+    ```
+    module.exports = function () {
+      return 'world';
+    }
+    ```
 
 2. Build for browser!
 
-```bash
-$ browserbuild -m hithere `find lib -name '*.js'` > my-library.js
-```
+    ```bash
+    $ browserbuild -m hithere `find lib -name '*.js'` > my-library.js
+    ```
 
 3. Use!
 
