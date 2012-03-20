@@ -1,4 +1,12 @@
 
+0.4.0 / 2012-03-20
+==================
+
+  * Outputs to stdout instead of `dist/`.
+  * Instrumentation removed in favor of visionmedia/debug.
+  * Accepts a list of files instead of a single directory.
+  * Cleaned up README
+
 0.3.1 / 2012-03-09
 ==================
 
