@@ -92,16 +92,17 @@ function handle (filepath) {
 };
 
 // debug
+var debugCode;
 if (program.debug) {
-  debug = read(__dirname + '/../node_modules/debug/debug.js');
+  debugCode = read(__dirname + '/../node_modules/debug/debug.js');
 } else {
-  debug = 'function debug(){return debug};';
+  debugCode = 'function debug(){return debug};';
 }
 
 // head
 var data = '(function(){'
   + 'var global = this;'
-  + debug
+  + debugCode
   + source
 
 // handle files
