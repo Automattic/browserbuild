@@ -4,6 +4,7 @@ var program = require('commander')
   , path = require('path')
   , fs = require('fs')
   , pwd = process.cwd()
+  , debug = require('debug')('browserbuild')
 
 // reads a client-side file
 
