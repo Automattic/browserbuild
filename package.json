@@ -1,6 +1,6 @@
 {
     "name": "browserbuild"
-  , "version": "0.4.3"
+  , "version": "0.4.4"
   , "bin": { "browserbuild": "./bin/browserbuild" }
   , "dependencies": {
         "commander": "0.5.x"

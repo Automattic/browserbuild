@@ -1,4 +1,10 @@
 
+0.4.4 / 2012-03-25
+==================
+
+  * Added back `// if node` support. [Sembiance]
+  * Leveraged visionmedia/debug.
+
 0.4.3 / 2012-03-20
 ==================
 
