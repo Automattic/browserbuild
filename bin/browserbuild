@@ -54,7 +54,7 @@ function handle (filepath) {
     var files = fs.readdirSync(filepath);
 
     files.forEach(function (f) {
-      handle(path + '/' + f);
+      handle(filepath + '/' + f);
     });
   } else {
     var base = program.basepath
