@@ -64,7 +64,29 @@ function handle (filepath) {
       filepath = filepath.substr(base.length);
     }
 
-    data += 'require.register("' + path + '", '
+    // remove `if node`
+    var ignoring = false
+
+    source = source.split('\n').map(function (line, i) {
+      if (ignoring) {
+        if (/^ *\/\/ *end/.test(line)) {
+          ignoring = false;
+        }
+        return '';
+      } else {
+        if (/^ *\/\/ *if *node/.test(line)) {
+          debug('[%s] skipping node-only code at line %d'
+            , path.basename(filepath), i + 1);
+          ignoring = true;
+          return '';
+        } else {
+          return line;
+        }
+      }
+    }).join('\n');
+
+    // wrap
+    data += 'require.register("' + filepath + '", '
       + 'function(module, exports, require, global){\n' + source + '\n});';
   }
 };
