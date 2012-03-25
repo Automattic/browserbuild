@@ -47,21 +47,21 @@ if (!program.args.length) {
 var target = program.args
   , mod = path.basename(program.main)
 
-function handle (path) {
-  var stat = fs.statSync(path);
+function handle (filepath) {
+  var stat = fs.statSync(filepath);
 
   if (stat.isDirectory()) {
-    var files = fs.readdirSync(path);
+    var files = fs.readdirSync(filepath);
 
     files.forEach(function (f) {
       handle(path + '/' + f);
     });
   } else {
     var base = program.basepath
-      , source = fs.readFileSync(path, 'utf8')
+      , source = fs.readFileSync(filepath, 'utf8')
 
-    if (base && base == path.substr(0, base.length)) {
-      path = path.substr(base.length);
+    if (base && base == filepath.substr(0, base.length)) {
+      filepath = filepath.substr(base.length);
     }
 
     data += 'require.register("' + path + '", '
