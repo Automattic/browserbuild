@@ -1,4 +1,9 @@
 
+0.4.6 / 2012-04-02
+==================
+
+  * Added parent information to require errors [visionmedia]
+
 0.4.5 / 2012-03-25
 ==================
 
