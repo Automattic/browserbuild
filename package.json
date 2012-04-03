@@ -4,6 +4,6 @@
   , "bin": { "browserbuild": "./bin/browserbuild" }
   , "dependencies": {
         "commander": "0.5.x"
-      , "debug": "*"
+      , "debug": "0.6.0"
     }
 }
