@@ -1,4 +1,9 @@
 
+0.4.8 / 2012-04-03
+==================
+
+  * Added debug repository directly to avoid NPM dependency conflicts.
+
 0.4.7 / 2012-04-03
 ==================
 
