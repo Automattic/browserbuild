@@ -94,7 +94,7 @@ function handle (filepath) {
 // debug
 var debugCode;
 if (program.debug) {
-  debugCode = read(__dirname + '/../node_modules/debug/debug.js');
+  debugCode = read(__dirname + '/../support/debug/debug.js');
 } else {
   debugCode = 'function debug(){return debug};';
 }
