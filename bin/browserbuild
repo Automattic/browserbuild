@@ -3,6 +3,7 @@
 var program = require('commander')
   , pwd = process.cwd()
   , browserbuild = require('../lib/browserbuild.js')
+  , list = function(v){return v.split(/ *, */)}
 
 // program
 
@@ -10,7 +11,7 @@ program
   .version(require('../package').version)
   .usage('[options] <file …>')
   .option('-g, --global [name]', 'Name of the global to export.')
-  .option('-b, --basepath [name]', 'Base path of supplied files ['+ pwd + '].', pwd)
+  .option('-b, --basepath [paths]', 'List of base paths of supplied files ['+ pwd + '].', list, [pwd])
   .option('-m, --main <name>', 'Name of the main file/module to export.')
   .option('-d, --debug', 'Includes visionmedia/debug for a dev build.')
   .parse(process.argv)
