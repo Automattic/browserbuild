@@ -1,4 +1,9 @@
 
+0.5.0 / 2012-07-07
+==================
+
+  * Allow for multiple basepaths, separated by a comma. [slaskis]
+
 0.4.8 / 2012-04-03
 ==================
 
