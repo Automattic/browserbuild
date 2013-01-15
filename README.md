@@ -32,7 +32,7 @@ compiled library.
 2. Build for browser!
 
     ```bash
-    $ browserbuild -m hithere `find lib -name '*.js'` > my-library.js
+    $ browserbuild -m hithere -b lib/ `find lib -name '*.js'` > my-library.js
     ```
 
 3. Use!
