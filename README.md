@@ -59,6 +59,7 @@ compiled library.
   - No trouble debugging.
 - [debug](http://github.com/visionmedia/debug) integration
   - Make dev builds with debugging enabled.
+- Automatically compile CoffeeScript.
 
 ## Credits
 
