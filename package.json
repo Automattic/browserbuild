@@ -1,10 +1,16 @@
 {
-    "name": "browserbuild"
-  , "version": "0.7.0"
-  , "bin": { "browserbuild": "./bin/browserbuild" }
-  , "main": "./lib/browserbuild.js"
-  , "dependencies": {
-        "commander": "0.5.x"
-      , "debug": "0.6.0"
+    "name": "browserbuild",
+    "version": "0.7.0",
+    "bin": {
+        "browserbuild": "./bin/browserbuild"
+    },
+    "main": "./lib/browserbuild.js",
+    "dependencies": {
+        "commander": "0.5.x",
+        "debug": "0.6.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LearnBoost/browserbuild.git"
     }
 }
